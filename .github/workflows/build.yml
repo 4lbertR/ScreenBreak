@@ -1,0 +1,56 @@
+name: Build ScreenBreak
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+    branches: [master, main]
+
+jobs:
+  build-backend:
+    name: Backend Tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: Backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: Backend/package-lock.json
+      - run: npm ci
+      - name: Start server and test health endpoint
+        run: |
+          cp .env.example .env
+          node server.js &
+          sleep 3
+          curl -f http://localhost:3000/api/health
+          kill %1
+
+  build-ios:
+    name: Build iOS App
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Generate Xcode project
+        run: xcodegen generate
+
+      - name: Build (Debug, no code signing)
+        run: |
+          xcodebuild build \
+            -project ScreenBreak.xcodeproj \
+            -scheme ScreenBreak \
+            -destination 'generic/platform=iOS' \
+            -configuration Debug \
+            CODE_SIGN_IDENTITY="-" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            ONLY_ACTIVE_ARCH=NO \
+            COMPILER_INDEX_STORE_ENABLE=NO \
+            | tail -50
