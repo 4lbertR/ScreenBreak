@@ -32,8 +32,9 @@ struct ScreenBreakApp: App {
                     let attempt = adManager.getUnlockCount(forApp: appName) + 1
                     AdWatchView(
                         appName: appName,
+                        appToken: nil,
                         requiredDuration: duration,
-                        attemptNumber: attempt
+                        unlockAttempt: attempt
                     )
                     .interactiveDismissDisabled(true)
                 }
