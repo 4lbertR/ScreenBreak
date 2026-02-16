@@ -5,6 +5,7 @@ on:
     branches: [master, main]
   pull_request:
     branches: [master, main]
+  workflow_dispatch:  # Allow manual trigger from GitHub web UI
 
 jobs:
   build-backend:
@@ -30,10 +31,13 @@ jobs:
           kill %1
 
   build-ios:
-    name: Build iOS App
+    name: Build iOS App (Unsigned)
     runs-on: macos-14
     steps:
       - uses: actions/checkout@v4
+
+      - name: Select Xcode 15
+        run: sudo xcode-select -s /Applications/Xcode_15.4.app/Contents/Developer || sudo xcode-select -s /Applications/Xcode_15.2.app/Contents/Developer || echo "Using default Xcode"
 
       - name: Install XcodeGen
         run: brew install xcodegen
@@ -53,4 +57,154 @@ jobs:
             CODE_SIGNING_ALLOWED=NO \
             ONLY_ACTIVE_ARCH=NO \
             COMPILER_INDEX_STORE_ENABLE=NO \
-            | tail -50
+            2>&1 | tail -80
+
+  # ────────────────────────────────────────────────────────────
+  # SIGNED BUILD + TESTFLIGHT UPLOAD
+  # ────────────────────────────────────────────────────────────
+  # This job is DISABLED by default. To enable it:
+  #
+  # 1. Rent a cloud Mac for ~15 min (macincloud.com or similar)
+  # 2. On the Mac, run these commands to create signing credentials:
+  #
+  #    # Create a certificate signing request
+  #    openssl req -nodes -newkey rsa:2048 -keyout ios_dist.key -out ios_dist.csr -subj "/CN=ScreenBreak/O=YourName"
+  #
+  #    # Go to https://developer.apple.com/account/resources/certificates/add
+  #    # Choose "Apple Distribution", upload ios_dist.csr, download the .cer file
+  #
+  #    # Convert .cer to .p12
+  #    openssl x509 -in distribution.cer -inform DER -out distribution.pem
+  #    openssl pkcs12 -export -out distribution.p12 -inkey ios_dist.key -in distribution.pem -password pass:YOUR_P12_PASSWORD
+  #
+  #    # Base64 encode the .p12 for GitHub Secrets
+  #    base64 -i distribution.p12 | pbcopy   # Now it's on your clipboard
+  #
+  #    # Create a provisioning profile at:
+  #    # https://developer.apple.com/account/resources/profiles/add
+  #    # Choose "App Store Connect", select your certificate and App ID
+  #    # Download and base64-encode it too:
+  #    base64 -i ScreenBreak.mobileprovision | pbcopy
+  #
+  # 3. Go to https://github.com/4lbertR/ScreenBreak/settings/secrets/actions
+  #    Add these secrets:
+  #      - APPLE_CERTIFICATE_BASE64    (the .p12 base64 string)
+  #      - APPLE_CERTIFICATE_PASSWORD  (the password you used for .p12)
+  #      - APPLE_PROVISIONING_PROFILE  (the .mobileprovision base64 string)
+  #      - APPLE_TEAM_ID               (your 10-char team ID from developer.apple.com)
+  #      - APPSTORE_CONNECT_API_KEY_ID      (from App Store Connect > Keys)
+  #      - APPSTORE_CONNECT_API_ISSUER_ID   (from App Store Connect > Keys)
+  #      - APPSTORE_CONNECT_API_KEY_BASE64  (the .p8 key file, base64 encoded)
+  #
+  # 4. Uncomment the job below and push.
+  # ────────────────────────────────────────────────────────────
+
+  # deploy-testflight:
+  #   name: Deploy to TestFlight
+  #   runs-on: macos-14
+  #   needs: [build-backend]
+  #   if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #
+  #     - name: Select Xcode 15
+  #       run: sudo xcode-select -s /Applications/Xcode_15.4.app/Contents/Developer || sudo xcode-select -s /Applications/Xcode_15.2.app/Contents/Developer || echo "Using default Xcode"
+  #
+  #     - name: Install XcodeGen
+  #       run: brew install xcodegen
+  #
+  #     - name: Generate Xcode project
+  #       run: xcodegen generate
+  #
+  #     - name: Install Apple certificate and provisioning profile
+  #       env:
+  #         CERTIFICATE_BASE64: ${{ secrets.APPLE_CERTIFICATE_BASE64 }}
+  #         CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+  #         PROVISIONING_PROFILE_BASE64: ${{ secrets.APPLE_PROVISIONING_PROFILE }}
+  #       run: |
+  #         # Decode certificate
+  #         CERTIFICATE_PATH=$RUNNER_TEMP/certificate.p12
+  #         echo -n "$CERTIFICATE_BASE64" | base64 --decode -o $CERTIFICATE_PATH
+  #
+  #         # Create temporary keychain
+  #         KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
+  #         KEYCHAIN_PASSWORD=$(openssl rand -base64 32)
+  #         security create-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+  #         security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
+  #         security unlock-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+  #
+  #         # Import certificate
+  #         security import $CERTIFICATE_PATH -P "$CERTIFICATE_PASSWORD" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
+  #         security set-key-partition-list -S apple-tool:,apple: -k "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+  #         security list-keychain -d user -s $KEYCHAIN_PATH
+  #
+  #         # Install provisioning profile
+  #         PP_PATH=$HOME/Library/MobileDevice/Provisioning\ Profiles
+  #         mkdir -p "$PP_PATH"
+  #         echo -n "$PROVISIONING_PROFILE_BASE64" | base64 --decode -o "$PP_PATH/ScreenBreak.mobileprovision"
+  #
+  #     - name: Update project team ID
+  #       run: |
+  #         sed -i '' "s/DEVELOPMENT_TEAM: \"\"/DEVELOPMENT_TEAM: \"${{ secrets.APPLE_TEAM_ID }}\"/" project.yml
+  #         xcodegen generate
+  #
+  #     - name: Archive
+  #       run: |
+  #         xcodebuild archive \
+  #           -project ScreenBreak.xcodeproj \
+  #           -scheme ScreenBreak \
+  #           -destination 'generic/platform=iOS' \
+  #           -archivePath $RUNNER_TEMP/ScreenBreak.xcarchive \
+  #           -configuration Release \
+  #           ONLY_ACTIVE_ARCH=NO \
+  #           COMPILER_INDEX_STORE_ENABLE=NO
+  #
+  #     - name: Create ExportOptions.plist
+  #       run: |
+  #         cat > $RUNNER_TEMP/ExportOptions.plist << PLIST
+  #         <?xml version="1.0" encoding="UTF-8"?>
+  #         <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+  #         <plist version="1.0">
+  #         <dict>
+  #           <key>method</key>
+  #           <string>app-store-connect</string>
+  #           <key>teamID</key>
+  #           <string>${{ secrets.APPLE_TEAM_ID }}</string>
+  #           <key>uploadSymbols</key>
+  #           <true/>
+  #           <key>destination</key>
+  #           <string>upload</string>
+  #         </dict>
+  #         </plist>
+  #         PLIST
+  #
+  #     - name: Export IPA
+  #       run: |
+  #         xcodebuild -exportArchive \
+  #           -archivePath $RUNNER_TEMP/ScreenBreak.xcarchive \
+  #           -exportPath $RUNNER_TEMP/export \
+  #           -exportOptionsPlist $RUNNER_TEMP/ExportOptions.plist
+  #
+  #     - name: Upload to TestFlight
+  #       env:
+  #         API_KEY_ID: ${{ secrets.APPSTORE_CONNECT_API_KEY_ID }}
+  #         API_ISSUER_ID: ${{ secrets.APPSTORE_CONNECT_API_ISSUER_ID }}
+  #         API_KEY_BASE64: ${{ secrets.APPSTORE_CONNECT_API_KEY_BASE64 }}
+  #       run: |
+  #         # Decode API key
+  #         mkdir -p ~/.appstoreconnect/private_keys
+  #         echo -n "$API_KEY_BASE64" | base64 --decode > ~/.appstoreconnect/private_keys/AuthKey_${API_KEY_ID}.p8
+  #
+  #         # Upload via altool
+  #         xcrun altool --upload-app \
+  #           --type ios \
+  #           --file "$RUNNER_TEMP/export/ScreenBreak.ipa" \
+  #           --apiKey "$API_KEY_ID" \
+  #           --apiIssuer "$API_ISSUER_ID"
+  #
+  #     - name: Upload IPA artifact
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: ScreenBreak-IPA
+  #         path: ${{ runner.temp }}/export/ScreenBreak.ipa
+  #         retention-days: 30
