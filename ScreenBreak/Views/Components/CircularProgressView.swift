@@ -122,7 +122,7 @@ extension CircularProgressView where CenterContent == Text {
         self.centerContent = {
             if showPercentage {
                 Text("\(Int(min(max(progress, 0), 1) * 100))%")
-                    .font(.system(.title2, design: .rounded, weight: .bold))
+                    .font(.system(.title2, weight: .bold, design: .rounded))
                     .foregroundStyle(.white)
             } else {
                 Text("")
@@ -144,7 +144,7 @@ extension CircularProgressView where CenterContent == Text {
         self.secondaryColor = secondaryColor
         self.centerContent = {
             Text(centerText)
-                .font(.system(.title2, design: .rounded, weight: .bold))
+                .font(.system(.title2, weight: .bold, design: .rounded))
                 .foregroundStyle(.white)
         }
     }

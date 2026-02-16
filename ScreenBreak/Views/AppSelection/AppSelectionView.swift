@@ -86,7 +86,7 @@ struct AppSelectionView: View {
     private var headerSection: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Choose Apps to Block")
-                .font(.system(.title3, design: .rounded, weight: .bold))
+                .font(.system(.title3, weight: .bold, design: .rounded))
                 .foregroundStyle(.white)
 
             Text("Select the apps you want to limit. When you try to open a blocked app, you'll need to watch an ad to earn temporary access.")

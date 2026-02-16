@@ -268,7 +268,7 @@ struct StatsView: View {
                         .font(.title2)
                         .foregroundStyle(.orange)
                     Text("\(viewModel.currentStreak)")
-                        .font(.system(.title3, design: .rounded, weight: .bold))
+                        .font(.system(.title3, weight: .bold, design: .rounded))
                         .foregroundStyle(.white)
                 }
             }
@@ -349,7 +349,7 @@ struct StatsView: View {
         return HStack(spacing: 14) {
             // Rank badge
             Text("\(rank)")
-                .font(.system(.caption, design: .rounded, weight: .bold))
+                .font(.system(.caption, weight: .bold, design: .rounded))
                 .foregroundStyle(rank <= 3 ? teal : .white.opacity(0.4))
                 .frame(width: 24, height: 24)
                 .background(

@@ -201,7 +201,7 @@ struct AdWatchView: View {
                     } else {
                         // Time display
                         Text(formattedTime)
-                            .font(.system(size: 42, design: .monospaced, weight: .bold))
+                            .font(.system(size: 42, weight: .bold, design: .monospaced))
                             .foregroundStyle(.white)
                             .contentTransition(.numericText())
 
@@ -300,7 +300,7 @@ struct AdWatchView: View {
             }
 
             Text("App Unlocked!")
-                .font(.system(.title3, design: .rounded, weight: .bold))
+                .font(.system(.title3, weight: .bold, design: .rounded))
                 .foregroundStyle(.white)
 
             HStack(spacing: 6) {
