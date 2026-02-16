@@ -127,7 +127,7 @@ final class StorageManager {
         }
         let descriptor = FetchDescriptor<UnlockSession>(
             predicate: predicate,
-            sortBy: [SortDescriptor(\.expiresAt, order: .ascending)]
+            sortBy: [SortDescriptor(\.expiresAt, order: .forward)]
         )
 
         do {
