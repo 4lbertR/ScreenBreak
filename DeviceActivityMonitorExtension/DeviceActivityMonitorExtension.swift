@@ -80,27 +80,14 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         let categoryTokens = selection.categoryTokens
         let webDomainTokens = selection.webDomainTokens
 
-        if appTokens.isEmpty {
-            store.shield.applications = nil
-        } else {
-            store.shield.applications = .specific(appTokens)
-        }
+        store.shield.applications = appTokens.isEmpty ? nil : appTokens
+        store.shield.webDomains = webDomainTokens.isEmpty ? nil : webDomainTokens
 
         if categoryTokens.isEmpty {
             store.shield.applicationCategories = nil
-        } else {
-            store.shield.applicationCategories = .specific(categoryTokens)
-        }
-
-        if webDomainTokens.isEmpty {
-            store.shield.webDomains = nil
-        } else {
-            store.shield.webDomains = .specific(webDomainTokens)
-        }
-
-        if categoryTokens.isEmpty {
             store.shield.webDomainCategories = nil
         } else {
+            store.shield.applicationCategories = .specific(categoryTokens)
             store.shield.webDomainCategories = .specific(categoryTokens)
         }
     }

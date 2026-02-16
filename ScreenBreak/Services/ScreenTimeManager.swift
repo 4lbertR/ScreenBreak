@@ -92,7 +92,7 @@ final class ScreenTimeManager {
             logger.info("No apps to shield — cleared shield configuration.")
             return
         }
-        store.shield.applications = .specific(tokensToShield)
+        store.shield.applications = tokensToShield
         store.shield.applicationCategories = selectedApps.categoryTokens.isEmpty
             ? nil
             : .specific(selectedApps.categoryTokens)
