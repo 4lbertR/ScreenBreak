@@ -300,7 +300,7 @@ struct AdWatchView: View {
             }
 
             Text("App Unlocked!")
-                .font(.system(.title3, weight: .bold, design: .rounded))
+                .font(.system(.title3, design: .rounded, weight: .bold))
                 .foregroundStyle(.white)
 
             HStack(spacing: 6) {

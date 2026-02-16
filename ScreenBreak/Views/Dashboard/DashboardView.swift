@@ -72,13 +72,13 @@ struct DashboardView: View {
         HStack(alignment: .top) {
             VStack(alignment: .leading, spacing: 4) {
                 Text(greetingText)
-                    .font(.system(.title2, weight: .bold, design: .rounded))
+                    .font(.system(.title2, design: .rounded, weight: .bold))
                     .foregroundStyle(.white)
 
                 let profile = UserProfile.fetchOrCreate(in: modelContext)
                 if !profile.displayName.isEmpty {
                     Text(profile.displayName)
-                        .font(.system(.title, weight: .bold, design: .rounded))
+                        .font(.system(.title, design: .rounded, weight: .bold))
                         .foregroundStyle(teal)
                 }
             }
@@ -93,7 +93,7 @@ struct DashboardView: View {
                     .symbolEffect(.variableColor.iterative, options: .repeating)
 
                 Text("\(viewModel.currentStreak)")
-                    .font(.system(.title3, weight: .bold, design: .rounded))
+                    .font(.system(.title3, design: .rounded, weight: .bold))
                     .foregroundStyle(.white)
             }
             .padding(.horizontal, 14)
@@ -128,7 +128,7 @@ struct DashboardView: View {
                 ) {
                     VStack(spacing: 2) {
                         Text("\(Int(viewModel.dailyGoalProgress * 100))%")
-                            .font(.system(.title3, weight: .bold, design: .rounded))
+                            .font(.system(.title3, design: .rounded, weight: .bold))
                             .foregroundStyle(.white)
                         Text("of goal")
                             .font(.caption2)
@@ -238,7 +238,7 @@ struct DashboardView: View {
                     .foregroundStyle(remaining < 120 ? .red : teal)
 
                 Text(formatCountdown(remaining))
-                    .font(.system(.subheadline, weight: .semibold, design: .monospaced))
+                    .font(.system(.subheadline, design: .monospaced, weight: .semibold))
                     .foregroundStyle(remaining < 120 ? .red : .white)
                     .contentTransition(.numericText())
             }

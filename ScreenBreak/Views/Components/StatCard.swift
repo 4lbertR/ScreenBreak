@@ -44,9 +44,9 @@ struct StatCard: View {
 
         var valueFont: Font {
             switch self {
-            case .compact: return .system(.body, weight: .bold, design: .rounded)
-            case .regular: return .system(.title3, weight: .bold, design: .rounded)
-            case .large:   return .system(.title, weight: .bold, design: .rounded)
+            case .compact: return .system(.body, design: .rounded, weight: .bold)
+            case .regular: return .system(.title3, design: .rounded, weight: .bold)
+            case .large:   return .system(.title, design: .rounded, weight: .bold)
             }
         }
 
@@ -167,7 +167,7 @@ struct WideStatCard: View {
             }
 
             Text(value)
-                .font(.system(.largeTitle, weight: .bold, design: .rounded))
+                .font(.system(.largeTitle, design: .rounded, weight: .bold))
                 .foregroundStyle(.white)
                 .contentTransition(.numericText())
 
