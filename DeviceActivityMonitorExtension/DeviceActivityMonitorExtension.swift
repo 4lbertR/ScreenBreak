@@ -8,7 +8,7 @@ import os
 
 class DeviceActivityMonitorExtension: DeviceActivityMonitor {
 
-    private static let appGroupID = "group.com.screenbreak.app"
+    private static let appGroupID = "group.albertreinman.app"
     private static let selectionKey = "screenbreak.familyActivitySelection"
 
     private let store = ManagedSettingsStore()

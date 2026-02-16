@@ -8,7 +8,7 @@ import os
 class ShieldActionExtension: ShieldActionDelegate {
 
     private static let urlScheme = "screenbreak"
-    private static let appGroupID = "group.com.screenbreak.app"
+    private static let appGroupID = "group.albertreinman.app"
     private static let pendingUnlockAppNameKey = "screenbreak.pendingUnlockAppName"
     private static let pendingUnlockTokenKey = "screenbreak.pendingUnlockTokenData"
 

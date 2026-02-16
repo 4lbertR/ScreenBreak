@@ -33,7 +33,7 @@ final class ScreenTimeManager {
     private var relockTimers: [Int: Timer] = [:]
 
     private static let selectionKey = "screenbreak.familyActivitySelection"
-    private static let suiteName = "group.com.screenbreak.app"
+    private static let suiteName = "group.albertreinman.app"
 
     // MARK: - Init
 

@@ -142,6 +142,6 @@ enum AppConstants {
     enum AppGroup {
         /// Shared App Group identifier (used by the main app + all Screen Time extensions).
         /// Must match the value in every target's entitlements file and `ScreenTimeManager.suiteName`.
-        static let identifier = "group.com.screenbreak.app"
+        static let identifier = "group.albertreinman.app"
     }
 }
