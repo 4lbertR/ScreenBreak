@@ -54,7 +54,7 @@ class ShieldActionExtension: ShieldActionDelegate {
     ///   - action: Which button was tapped (`.primaryButtonPressed` or `.secondaryButtonPressed`).
     ///   - application: The `Application` that is currently shielded.
     ///   - completionHandler: Must be called exactly once with a `ShieldActionResponse`.
-    override func handle(
+    func handle(
         action: ShieldAction,
         for application: Application,
         completionHandler: @escaping (ShieldActionResponse) -> Void
@@ -117,7 +117,7 @@ class ShieldActionExtension: ShieldActionDelegate {
     ///
     /// The flow mirrors the application handler: primary opens the main app
     /// for an ad, secondary dismisses.
-    override func handle(
+    func handle(
         action: ShieldAction,
         for webDomain: WebDomain,
         completionHandler: @escaping (ShieldActionResponse) -> Void
